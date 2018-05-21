@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="0abe6e04-b9f7-48d3-b097-e9b749d2b267" name="RPi3testes1@home" url="http://192.168.1.104">
+        <fileTransfer host="192.168.1.104" port="22" rootFolder="/home/surgeonmate" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="a640ce5f-0e8e-44a2-81bf-eb31c0d51a7f" name="RPi3testes2@home" url="http://192.168.1.85">
+        <fileTransfer host="192.168.1.85" port="22" rootFolder="/home/surgeonmate" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="d00e371b-55fa-48af-94cb-d5741e6c6ecd" name="RPi3testes1@local" url="http://192.168.2.2">
+        <fileTransfer host="192.168.2.2" port="22" rootFolder="/home/surgeonmate" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
