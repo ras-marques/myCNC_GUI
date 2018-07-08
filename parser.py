@@ -111,6 +111,8 @@ class Machine:
         self.x_size = 100
         self.y_size = 100
         self.z_size = 100
+
+        self.origin_set = False
         self.origin_changed = False
 
     def adjust_machine_z_to_board(self):
@@ -404,7 +406,7 @@ class CommsThread(QtCore.QThread):
         self.process_ok = True
         self.ser.baudrate = 115200
         self.ser.timeout = 0
-        self.ser.port = 'COM14'
+        self.ser.port = 'COM13'
 
         self.ser.open()
 
@@ -432,7 +434,6 @@ class CommsThread(QtCore.QThread):
             self.write_microsteps()
             self.write_translatingspeed()
             self.write_next_pos_to_origin()
-            self.write_next_pos_to_origin()
             self.wait_for_done()
         elif self.comm_mode == "next_xyz_absolute":
             self.comm_mode == ""
@@ -440,6 +441,11 @@ class CommsThread(QtCore.QThread):
             self.write_translatingspeed()
             self.write_next_pos_absolute()
             self.wait_for_done()
+        elif self.comm_mode == "probe":
+            self.comm_mode == ""
+            self.write_microsteps()
+            self.write_translatingspeed()
+            self.write_probe()
 
         if not self.process_ok:
             self.reset()
@@ -647,6 +653,32 @@ class CommsThread(QtCore.QThread):
             except:
                 self.buf = ''
                 print "Unexpected error during Wait for done:", sys.exc_info()[0]
+                self.comm_ok = False
+                break
+
+    def write_probe(self):
+        self.ser.write("exeprobe")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+        while 1:
+            try:
+                inc = self.ser.read(1)
+                self.buf += inc
+                if inc == '!':
+                    self.buf = self.buf.replace("!", "")
+                    # faz o update de next_z_absolute para z_absolute mais a frente no CommsThread
+                    machine.next_z_absolute = int(self.buf)
+                    # print(machine.next_z_absolute)
+                    self.buf = ''
+                    break
+            except serial.SerialException as e:
+                self.buf = ''
+                print(str(e))
+                self.comm_ok = False
+                break
+            except:
+                self.buf = ''
+                print "Unexpected error during Write probe:", sys.exc_info()[0]
                 self.comm_ok = False
                 break
 
@@ -1505,13 +1537,55 @@ class MainWindow(QtGui.QMainWindow):
             pass
 
     def define_p(self):
+        serial_thread.translatingspeed = main_window.positioning_speed.value()
+        serial_thread.comm_mode = "probe"
+        serial_thread.start()
+        serial_thread.running = True
+        while serial_thread.running:
+            pass
+        # print(machine.z_absolute)
         board.define_p(machine.x_absolute, machine.y_absolute, machine.z_absolute)
+        machine.next_x_absolute = machine.x_absolute
+        machine.next_y_absolute = machine.y_absolute
+        machine.next_z_absolute = machine.z_absolute + 10000
+        serial_thread.translatingspeed = main_window.positioning_speed.value()
+        serial_thread.comm_mode = "next_xyz_absolute"
+        serial_thread.start()
+        serial_thread.running = True
 
     def define_q(self):
+        serial_thread.translatingspeed = main_window.positioning_speed.value()
+        serial_thread.comm_mode = "probe"
+        serial_thread.start()
+        serial_thread.running = True
+        while serial_thread.running:
+            pass
+        # print(machine.z_absolute)
         board.define_q(machine.x_absolute, machine.y_absolute, machine.z_absolute)
+        machine.next_x_absolute = machine.x_absolute
+        machine.next_y_absolute = machine.y_absolute
+        machine.next_z_absolute = machine.z_absolute + 10000
+        serial_thread.translatingspeed = main_window.positioning_speed.value()
+        serial_thread.comm_mode = "next_xyz_absolute"
+        serial_thread.start()
+        serial_thread.running = True
 
     def define_r(self):
+        serial_thread.translatingspeed = main_window.positioning_speed.value()
+        serial_thread.comm_mode = "probe"
+        serial_thread.start()
+        serial_thread.running = True
+        while serial_thread.running:
+            pass
+        # print(machine.z_absolute)
         board.define_r(machine.x_absolute, machine.y_absolute, machine.z_absolute)
+        machine.next_x_absolute = machine.x_absolute
+        machine.next_y_absolute = machine.y_absolute
+        machine.next_z_absolute = machine.z_absolute + 10000
+        serial_thread.translatingspeed = main_window.positioning_speed.value()
+        serial_thread.comm_mode = "next_xyz_absolute"
+        serial_thread.start()
+        serial_thread.running = True
 
     def quit_app(self):
         user_info = QtGui.QMessageBox.question(self, 'Confirmation',
