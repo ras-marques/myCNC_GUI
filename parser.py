@@ -112,7 +112,7 @@ class Machine:
         self.y_size = 100
         self.z_size = 100
 
-        self.origin_set = False
+        self.z_origin_set = False
         self.origin_changed = False
 
     def adjust_machine_z_to_board(self):
@@ -246,8 +246,12 @@ class PrintManager(QtCore.QThread):
         self.z_g82_up = 0
         self.z_g82_down = 0
         self.number_of_commands_queued = 0
+        self.stop_gcode_file_job = False
 
     def load_gcode(self):
+        machine.z_origin_set = False    # desta forma, quando muda a ferramenta, tem que tirar a origem primeiro ao
+                                        # sondar a superficie
+
         self.gcode_array = []
         main_window.preview_frame.gcode_file.seek(0)
         for line in main_window.preview_frame.gcode_file:
@@ -256,6 +260,9 @@ class PrintManager(QtCore.QThread):
     def run(self):
         self.line_number = 1
         for line in self.gcode_array:
+            if self.stop_gcode_file_job:
+                self.stop_gcode_file_job = False
+                break
             print("")
             print(self.line_number)
             print(line),
@@ -276,11 +283,18 @@ class PrintManager(QtCore.QThread):
                 machine.update_next_absolute_and_preview()
                 machine.print_pos()
 
+                # inicialmente o programa comeca pausado by default, significando que precisa ser "despausado", e nessa
+                # altura, a condicao seguinte deixa de se verificar (ver change_pause() ), porque
+                # number_of_commands_queued passa a ser -1, em vez de 0, que e como este atributo do thread inicia
                 while self.number_of_commands_queued == 0:
                     pass
                 if self.number_of_commands_queued > 0:
                     self.number_of_commands_queued -= 1
                 # machine.check_origin_changed()
+
+                if self.stop_gcode_file_job:
+                    self.stop_gcode_file_job = False
+                    break
 
                 if line[0:3] == "G00":
                     serial_thread.translatingspeed = main_window.translating_speed.value()
@@ -314,11 +328,16 @@ class PrintManager(QtCore.QThread):
                 machine.update_next_absolute_and_preview()
                 machine.print_pos()
 
+                # ver a primeira ocorrencia desta rotina
                 while self.number_of_commands_queued == 0:
                     pass
                 if self.number_of_commands_queued > 0:
                     self.number_of_commands_queued -= 1
                 # machine.check_origin_changed()
+
+                if self.stop_gcode_file_job:
+                    self.stop_gcode_file_job = False
+                    break
 
                 serial_thread.translatingspeed = main_window.translating_speed.value()
                 serial_thread.comm_mode = "next_xyz_to_origin"
@@ -337,11 +356,16 @@ class PrintManager(QtCore.QThread):
                 machine.update_next_absolute_and_preview()
                 machine.print_pos()
 
+                # ver a primeira ocorrencia desta rotina
                 while self.number_of_commands_queued == 0:
                     pass
                 if self.number_of_commands_queued > 0:
                     self.number_of_commands_queued -= 1
                 # machine.check_origin_changed()
+
+                if self.stop_gcode_file_job:
+                    self.stop_gcode_file_job = False
+                    break
 
                 serial_thread.translatingspeed = main_window.milling_speed.value()
                 serial_thread.comm_mode = "next_xyz_to_origin"
@@ -360,11 +384,16 @@ class PrintManager(QtCore.QThread):
                 machine.update_next_absolute_and_preview()
                 machine.print_pos()
 
+                # ver a primeira ocorrencia desta rotina
                 while self.number_of_commands_queued == 0:
                     pass
                 if self.number_of_commands_queued > 0:
                     self.number_of_commands_queued -= 1
                 # machine.check_origin_changed()
+
+                if self.stop_gcode_file_job:
+                    self.stop_gcode_file_job = False
+                    break
 
                 serial_thread.translatingspeed = main_window.translating_speed.value()
                 serial_thread.comm_mode = "next_xyz_to_origin"
@@ -378,6 +407,7 @@ class PrintManager(QtCore.QThread):
             self.line_number += 1
 
             if not serial_thread.process_ok:
+                main_window.sync_position()
                 break
 
         self.running = False
@@ -917,8 +947,8 @@ class PreviewWindow(QtGui.QWidget):
                 self.y_mouse = (self.max_height - 1)*1. / self.window_scale
             # print("x_mouse: " + str(self.x_mouse) + "\ty_mouse: " + str(self.y_mouse))
             # print("x_offset: " + str(self.x_offset) + "\ty_offset: " + str(self.y_offset))
-            machine.x_origin = machine.x_absolute - (self.x_mouse*1000 - machine.x_origin)  # ainda e preciso testar
-            machine.y_origin = machine.y_absolute - (self.y_mouse*1000 - machine.y_origin)  # ainda e preciso testar
+            machine.x_origin = int(machine.x_absolute - (self.x_mouse*1000 - machine.x_origin))  # ainda e preciso testar
+            machine.y_origin = int(machine.y_absolute - (self.y_mouse*1000 - machine.y_origin))  # ainda e preciso testar
             serial_thread.comm_mode = "set_xy_origin"
             serial_thread.start()
             serial_thread.running = True
@@ -1380,11 +1410,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def set_z_origin(self):
         machine.z_origin = machine.z_absolute
+        print(machine.z_absolute)
         self.preview_frame.update()
         self.go_to_originButton.setEnabled(True)
         serial_thread.comm_mode = "set_z_origin"
         serial_thread.start()
         serial_thread.running = True
+        machine.z_origin_set = True
 
     def align_to_xy(self):
         self.align_to_xyButton.setChecked(True)
@@ -1545,6 +1577,10 @@ class MainWindow(QtGui.QMainWindow):
             pass
         # print(machine.z_absolute)
         board.define_p(machine.x_absolute, machine.y_absolute, machine.z_absolute)
+        if not machine.z_origin_set:
+            self.set_z_origin()
+            while serial_thread.running:
+                pass
         machine.next_x_absolute = machine.x_absolute
         machine.next_y_absolute = machine.y_absolute
         machine.next_z_absolute = machine.z_absolute + 10000
@@ -1562,6 +1598,10 @@ class MainWindow(QtGui.QMainWindow):
             pass
         # print(machine.z_absolute)
         board.define_q(machine.x_absolute, machine.y_absolute, machine.z_absolute)
+        if not machine.z_origin_set:
+            self.set_z_origin()
+            while serial_thread.running:
+                pass
         machine.next_x_absolute = machine.x_absolute
         machine.next_y_absolute = machine.y_absolute
         machine.next_z_absolute = machine.z_absolute + 10000
@@ -1579,6 +1619,10 @@ class MainWindow(QtGui.QMainWindow):
             pass
         # print(machine.z_absolute)
         board.define_r(machine.x_absolute, machine.y_absolute, machine.z_absolute)
+        if not machine.z_origin_set:
+            self.set_z_origin()
+            while serial_thread.running:
+                pass
         machine.next_x_absolute = machine.x_absolute
         machine.next_y_absolute = machine.y_absolute
         machine.next_z_absolute = machine.z_absolute + 10000
@@ -1624,7 +1668,9 @@ class MainWindow(QtGui.QMainWindow):
     def stop(self):
         serial_thread.comm_mode = "stop"
         serial_thread.start()
+        printmanager_thread.stop_gcode_file_job = True
         printmanager_thread.running = True
+        self.sync_position()
 
     def start_process(self):
         printmanager_thread.load_gcode()
