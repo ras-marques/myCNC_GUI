@@ -407,7 +407,6 @@ class PrintManager(QtCore.QThread):
             self.line_number += 1
 
             if not serial_thread.process_ok:
-                main_window.sync_position()
                 break
 
         self.running = False
@@ -445,8 +444,8 @@ class CommsThread(QtCore.QThread):
             self.write_microsteps()
             self.write_translatingspeed()
             self.reset()
-            main_window.preview_frame.update()
             self.wait_for_done()
+            main_window.preview_frame.update()
         elif self.comm_mode == "stop":
             self.comm_mode = ""
             self.stop()
@@ -479,6 +478,8 @@ class CommsThread(QtCore.QThread):
 
         if not self.process_ok:
             self.reset()
+            self.wait_for_done()
+            self.sync_position()
 
         self.ser.close()
         
@@ -550,6 +551,7 @@ class CommsThread(QtCore.QThread):
         self.ser.write("reset")
         self.ser.write(chr(self.end_of_line))
         time.sleep(0.01)
+        self.wait_for_reset()
 
     def stop(self):
         self.ser.write("stop")
@@ -666,15 +668,17 @@ class CommsThread(QtCore.QThread):
                 self.buf += inc
                 if inc == '!':
                     if self.buf == "done!":
-                        pass
+                        self.buf = ''
+                        break
                     elif self.buf == "interrupt!":
                         self.process_ok = False
                         print("interrupt")
+                        self.buf = ''
                     else:
                         print("unexpected, received: "),
                         print(self.buf)
-                    self.buf = ''
-                    break
+                        self.buf = ''
+                        break
             except serial.SerialException as e:
                 self.buf = ''
                 print(str(e))
@@ -683,6 +687,32 @@ class CommsThread(QtCore.QThread):
             except:
                 self.buf = ''
                 print "Unexpected error during Wait for done:", sys.exc_info()[0]
+                self.comm_ok = False
+                break
+
+    def wait_for_reset(self):
+        while 1:
+            try:
+                inc = self.ser.read(1)
+                self.buf += inc
+                if inc == '!':
+                    if self.buf == "ON_RESET!":
+                        print(self.buf)
+                        self.buf = ''
+                        break
+                    else:
+                        print("unexpected, received: "),
+                        print(self.buf)
+                        self.buf = ''
+                        break
+            except serial.SerialException as e:
+                self.buf = ''
+                print(str(e))
+                self.comm_ok = False
+                break
+            except:
+                self.buf = ''
+                print "Unexpected error during Wait for reset:", sys.exc_info()[0]
                 self.comm_ok = False
                 break
 
