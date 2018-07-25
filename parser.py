@@ -470,6 +470,10 @@ class CommsThread(QtCore.QThread):
             self.write_translatingspeed()
             self.write_next_pos_absolute()
             self.wait_for_done()
+        elif self.comm_mode == "align_to_xy":
+            self.comm_mode == ""
+            self.set_xy_origin()
+            self.write_current_pos_absolute()
         elif self.comm_mode == "probe":
             self.comm_mode == ""
             self.write_microsteps()
@@ -500,6 +504,26 @@ class CommsThread(QtCore.QThread):
         self.ser.write(chr(self.end_of_line))
         time.sleep(0.01)
         self.ser.write(str(self.translatingspeed))
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+
+    def write_current_pos_absolute(self):
+        self.ser.write("set_xy_absolute")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+        self.ser.write("(")
+        self.ser.write(str(machine.x_absolute))
+        self.ser.write(",")
+        self.ser.write(str(machine.y_absolute))
+        self.ser.write(")")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+
+        self.comm_ok = False
+        while not self.comm_ok:
+            self.wait_for_comm_ok_set_xy_abs()
+
+        self.ser.write("exe")
         self.ser.write(chr(self.end_of_line))
         time.sleep(0.01)
 
@@ -594,11 +618,88 @@ class CommsThread(QtCore.QThread):
         self.ser.write("set_xy_origin")
         self.ser.write(chr(self.end_of_line))
         time.sleep(0.01)
+        self.ser.write("(")
+        self.ser.write(str(machine.x_origin))
+        self.ser.write(",")
+        self.ser.write(str(machine.y_origin))
+        self.ser.write(")")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+
+        self.comm_ok = False
+        while not self.comm_ok:
+            self.wait_for_comm_ok_set_origin()
 
     def set_z_origin(self):
         self.ser.write("set_z_origin")
         self.ser.write(chr(self.end_of_line))
         time.sleep(0.01)
+        self.ser.write("(")
+        self.ser.write(str(machine.z_origin))
+        self.ser.write(")")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+
+        self.comm_ok = False
+        while not self.comm_ok:
+            self.wait_for_comm_ok_set_origin()
+
+    def wait_for_comm_ok_set_origin(self):
+        self.ser.write("sync_position")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+        while 1:
+            try:
+                inc = self.ser.read(1)
+                self.buf += inc
+                if inc == '!':
+                    self.buf = self.buf.replace("!", "")
+                    buffer1, buffer2, buffer3, x_origin, y_origin, z_origin = self.buf.split(",")
+                    if not (machine.x_origin == int(x_origin) and
+                            machine.y_origin == int(y_origin) and
+                            machine.z_origin == int(z_origin)):
+                        self.comm_ok = False
+                    else:
+                        self.comm_ok = True
+                    self.buf = ''
+                    break
+
+            except serial.SerialException as e:
+                self.buf = ''
+                print(str(e))
+                break
+            except:
+                self.buf = ''
+                print "Unexpected error during Sync Position:", sys.exc_info()[0]
+                break
+
+    def wait_for_comm_ok_set_xy_abs(self):
+        self.ser.write("sync_position")
+        self.ser.write(chr(self.end_of_line))
+        time.sleep(0.01)
+        while 1:
+            try:
+                inc = self.ser.read(1)
+                self.buf += inc
+                if inc == '!':
+                    self.buf = self.buf.replace("!", "")
+                    x_absolute_readback, y_absolute_readback, buffer3, buffer4, buffer5, buffer6 = self.buf.split(",")
+                    if not (machine.x_absolute == int(x_absolute_readback) and
+                            machine.y_absolute == int(y_absolute_readback)):
+                        self.comm_ok = False
+                    else:
+                        self.comm_ok = True
+                    self.buf = ''
+                    break
+
+            except serial.SerialException as e:
+                self.buf = ''
+                print(str(e))
+                break
+            except:
+                self.buf = ''
+                print "Unexpected error during Sync Position:", sys.exc_info()[0]
+                break
 
     def wait_for_comm_ok_rel(self):
         self.ser.write("readback_rel")
@@ -979,7 +1080,7 @@ class PreviewWindow(QtGui.QWidget):
             # print("x_offset: " + str(self.x_offset) + "\ty_offset: " + str(self.y_offset))
             machine.x_origin = int(machine.x_absolute - (self.x_mouse*1000 - machine.x_origin))  # ainda e preciso testar
             machine.y_origin = int(machine.y_absolute - (self.y_mouse*1000 - machine.y_origin))  # ainda e preciso testar
-            serial_thread.comm_mode = "set_xy_origin"
+            serial_thread.comm_mode = "align_to_xy"
             serial_thread.start()
             serial_thread.running = True
         elif main_window.zoom_inButton.isChecked():

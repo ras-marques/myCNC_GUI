@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="787e3571-659b-405d-b76e-aec10269bb41" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/parser.py" afterDir="false" />
     </list>
@@ -17,7 +16,7 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/CNC_py_parser$interface.coverage" NAME="interface Coverage Results" MODIFIED="1509701015300" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="/" />
     <SUITE FILE_PATH="coverage/CNC_py_parser$test.coverage" NAME="test Coverage Results" MODIFIED="1520194095614" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CNC_py_parser$parser.coverage" NAME="parser Coverage Results" MODIFIED="1532527548035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CNC_py_parser$parser.coverage" NAME="parser Coverage Results" MODIFIED="1532544028060" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CNC_py_parser$tapete_mimosa.coverage" NAME="tapete_mimosa Coverage Results" MODIFIED="1520281199625" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../../../Work/Freelancing/PressureMatGame" />
     <SUITE FILE_PATH="coverage/CNC_py_parser$test__1_.coverage" NAME="test (1) Coverage Results" MODIFIED="1520281148201" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../../../Work/Freelancing/PressureMatGame" />
     <SUITE FILE_PATH="coverage/CNC_py_parser$server.coverage" NAME="server Coverage Results" MODIFIED="1521834603615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../../../Work/SurgeonMateR&amp;D/Software" />
@@ -37,12 +36,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="142" />
+          <entry key="py" value="501" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="142" />
+          <entry key="Python" value="501" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open" />
@@ -57,13 +56,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="350">
-              <caret line="481" column="32" selection-start-line="481" selection-start-column="32" selection-end-line="481" selection-end-column="32" />
+            <state relative-caret-position="-172">
+              <caret line="644" column="45" lean-forward="true" selection-start-line="644" selection-start-column="45" selection-end-line="644" selection-end-column="45" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
                 <element signature="e#163#256#0" />
                 <element signature="e#289#1433#0" />
                 <element signature="e#1464#1791#0" />
+                <marker date="1532544028052" expanded="true" signature="20063:20069" ph="..." />
               </folding>
             </state>
           </provider>
@@ -80,9 +80,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ssid_display_text_list</find>
-      <find>stream_max</find>
-      <find>scroll</find>
       <find>_scroll_num</find>
       <find>stream_max_num</find>
       <find>scroll_num</find>
@@ -110,6 +107,9 @@
       <find>self.reset</find>
       <find>process_ok</find>
       <find>sync_</find>
+      <find>go to</find>
+      <find>go_to_o</find>
+      <find>align_to_xy</find>
     </findStrings>
     <replaceStrings>
       <replace>userinfo</replace>
@@ -480,7 +480,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1119403" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -588,13 +587,14 @@
     <entry file="file://$PROJECT_DIR$/../../../Work/SurgeonMateR&amp;D/Software/server.py" />
     <entry file="file://$PROJECT_DIR$/parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="481" column="32" selection-start-line="481" selection-start-column="32" selection-end-line="481" selection-end-column="32" />
+        <state relative-caret-position="-172">
+          <caret line="644" column="45" lean-forward="true" selection-start-line="644" selection-start-column="45" selection-end-line="644" selection-end-column="45" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
             <element signature="e#163#256#0" />
             <element signature="e#289#1433#0" />
             <element signature="e#1464#1791#0" />
+            <marker date="1532544028052" expanded="true" signature="20063:20069" ph="..." />
           </folding>
         </state>
       </provider>
